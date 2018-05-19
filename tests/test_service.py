@@ -14,7 +14,7 @@ QUEUE = 'kf-dataevents-sqs'
 
 
 class Context:
-    def __init__(self, remaining=20000):
+    def __init__(self, remaining=40000):
         self.remaining = remaining
         self.function_name = 'kf-dataevents'
 
@@ -88,7 +88,7 @@ def test_upload(obj, messages, req, env):
     """
     s3 = obj()
     
-    service.handler({}, Context(10000))
+    service.handler({}, Context(40000))
     
     assert len(s3.list_objects(Bucket=BUCKET)['Contents']) == 1
 
@@ -120,7 +120,7 @@ def test_delete(obj, messages, queue, req, env):
     s3 = obj()
     queue_url = queue()
     
-    service.handler({}, Context(10000))
+    service.handler({}, Context(40000))
     sqs = boto3.resource('sqs', region_name='us-east-1')
     queue = sqs.Queue(queue_url)
     
@@ -141,7 +141,7 @@ def test_reinvoke(obj, messages, queue, req, env):
     patch_lam = patch('boto3.client')
     mock_lam = patch_lam.start()
     
-    service.handler({}, Context(200))
+    service.handler({}, Context(2000))
     sqs = boto3.resource('sqs', region_name='us-east-1')
     queue = sqs.Queue(queue_url)
 

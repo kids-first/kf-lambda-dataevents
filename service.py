@@ -36,7 +36,7 @@ def handler(event, context):
 
     while empty_batches < 3:
         # Running out of time
-        if context.get_remaining_time_in_millis() < 5000:
+        if context.get_remaining_time_in_millis() < 30000:
             # Upload, then re-invoke to continue processing
             save_messages(messages)
             attachments = [
