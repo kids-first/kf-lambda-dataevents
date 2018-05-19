@@ -7,10 +7,6 @@ import time
 from botocore.vendored import requests
 
 
-
-WAIT_TIME = 6
-
-
 def handler(event, context):
     """
     Iterate over an sqs queue and write events to a queue
@@ -28,8 +24,8 @@ def handler(event, context):
     if invoked == 1:
         # Send slack notif
         attachments = [
-            { "fallback": "I'm about to run daily data event log compaction!\nHere we gooooo!!!!",
-              "text": "I'm about to run daily data event log compaction!\nHere we gooooo!!!!",
+            { "fallback": "I'm about to run daily data event log compaction!\n:rocket: Here we gooooo!!!!",
+              "text": "I'm about to run daily data event log compaction!\n:rocket: Here we gooooo!!!!",
               "color": "#005e99"
             }
         ]
@@ -38,15 +34,14 @@ def handler(event, context):
     messages = {}
     empty_batches = 0
 
-    batch = [None]
-    while empty_batches < 3 and len(batch) > 0:
+    while empty_batches < 3:
         # Running out of time
         if context.get_remaining_time_in_millis() < 5000:
             # Upload, then re-invoke to continue processing
             save_messages(messages)
             attachments = [
-                { "fallback": "There's still events to process, but no time left! Re-invoking...",
-                  "text": "There's still events to process, but no time left! Re-invoking...",
+                { "fallback": ":hourglass: There's still events to process, but no time left!",
+                  "text": ":hourglass: There's still events to process, but no time left!",
                   "fields": [
                       {
                           "title": "Events Saved",
@@ -60,7 +55,12 @@ def handler(event, context):
                       }
                   ],
                   "color": "warning"
+                },
+                { "fallback": ":deploying_dev: I'm going back for more!",
+                  "text": ":deploying_dev: I'm going back for more!",
+                  "color": "warning"
                 }
+
             ]
             send_slack(attachments=attachments)
             # Re-invoke
@@ -68,7 +68,7 @@ def handler(event, context):
             response = lam.invoke(
                 FunctionName=context.function_name,
                 InvocationType='Event',
-                Payload=str.encode(json.dumps({'invoked': invoked})),
+                Payload=str.encode(json.dumps({'invoked': invoked+1})),
             )
             break
         # Get the next batch of messages
@@ -87,9 +87,7 @@ def handler(event, context):
     else:
         save_messages(messages)
         attachments = [
-            { "fallback": "Finished storing the daily logs",
-              "text": "Finished storing the daily logs",
-              "fields": [
+            { "fields": [
                   {
                       "title": "Events Saved",
                       "value": len(messages),
@@ -101,6 +99,10 @@ def handler(event, context):
                       "short": True
                   }
               ],
+              "color": "warning"
+            },
+            { "fallback": ":white_check_mark: Finished storing the daily logs!",
+              "text": ":white_check_mark: Finished storing the daily logs!",
               "color": "good"
             }
         ]

@@ -88,7 +88,7 @@ def test_upload(obj, messages, req, env):
     """
     s3 = obj()
     
-    service.handler({}, Context(6000))
+    service.handler({}, Context(10000))
     
     assert len(s3.list_objects(Bucket=BUCKET)['Contents']) == 1
 
@@ -112,6 +112,7 @@ def test_upload(obj, messages, req, env):
 
 @mock_lambda
 @mock_s3
+@mock_sqs
 def test_delete(obj, messages, queue, req, env):
     """
     Test that messages are deleted after being written
@@ -119,7 +120,7 @@ def test_delete(obj, messages, queue, req, env):
     s3 = obj()
     queue_url = queue()
     
-    service.handler({}, Context(6000))
+    service.handler({}, Context(10000))
     sqs = boto3.resource('sqs', region_name='us-east-1')
     queue = sqs.Queue(queue_url)
     
