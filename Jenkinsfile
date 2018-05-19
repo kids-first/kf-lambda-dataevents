@@ -25,7 +25,7 @@ pipeline {
       steps {
         slackSend (color: '#ddaa00', message: ":construction_worker: GETTING SCRIPTS:")
         sh '''
-        git clone git@github.com:kids-first/kf-lambda-dataevents-config.git
+        git clone -b debug git@github.com:kids-first/kf-lambda-dataevents-config.git
         '''
       }
     }
