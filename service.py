@@ -3,7 +3,8 @@ import gzip
 import io
 import boto3
 import json
-import time
+import uuid
+import datetime
 from botocore.vendored import requests
 
 
@@ -118,9 +119,11 @@ def save_messages(messages):
 
     out = b'\n'.join(messages.values())
     # Save to a file with current timestamp
-    resp = s3.put_object(Body=gzip.compress(out),
-                         Bucket=BUCKET,             
-                         Key='daily/{}.gz'.format(int(time.time())))
+    now = datetime.datetime.utcnow()
+    folder = now.strftime('%Y%m%d')
+    suffix = str(uuid.uuid4())[:8]
+    key = 'daily/{}/{}_{}.gz'.format(folder, now.strftime('%s'), suffix)
+    resp = s3.put_object(Body=gzip.compress(out), Bucket=BUCKET, Key=key)
 
 
 def send_slack(msg=None, attachments=None):
