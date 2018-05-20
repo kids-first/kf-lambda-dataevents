@@ -17,6 +17,10 @@ def handler(event, context):
     if not BUCKET or not SQS_URL:
         return 'BUCKET and SQS_URL must be provided'
 
+    # We will reinvoke the lambda when the remaining time falls bellow a
+    # certain fraction of the initial time
+    start_time = context.get_remaining_time_in_millis()
+
     sqs = boto3.resource('sqs', region_name='us-east-1')
     queue = sqs.Queue(SQS_URL)
 
@@ -37,9 +41,9 @@ def handler(event, context):
 
     while empty_batches < 3:
         # Running out of time
-        if context.get_remaining_time_in_millis() < 30000:
+        if context.get_remaining_time_in_millis() < start_time/2:
             # Upload, then re-invoke to continue processing
-            save_messages(messages)
+            taken = save_messages(messages)
             attachments = [
                 { "fallback": ":hourglass: There's still events to process, but no time left!",
                   "text": ":hourglass: There's still events to process, but no time left!",
@@ -57,11 +61,14 @@ def handler(event, context):
                   ],
                   "color": "warning"
                 },
+                { "fallback": ":clock: Took {}s to upload log file".format(taken),
+                  "text": ":clock: Took {}s to upload log file".format(taken),
+                  "color": "warning"
+                },
                 { "fallback": ":deploying_dev: I'm going back for more!",
                   "text": ":deploying_dev: I'm going back for more!",
                   "color": "warning"
                 }
-
             ]
             send_slack(attachments=attachments)
             # Re-invoke
@@ -86,7 +93,7 @@ def handler(event, context):
             messages[message.message_id] = m['Message'].replace("'", '"').encode()
             resp = message.delete()
     else:
-        save_messages(messages)
+        taken = save_messages(messages)
         attachments = [
             { "fields": [
                   {
@@ -102,6 +109,10 @@ def handler(event, context):
               ],
               "color": "warning"
             },
+            { "fallback": ":clock: Took {}s to upload log file".format(taken),
+              "text": ":clock: Took {}s to upload log file".format(taken),
+              "color": "warning"
+            },
             { "fallback": ":white_check_mark: Finished storing the daily logs!",
               "text": ":white_check_mark: Finished storing the daily logs!",
               "color": "good"
@@ -114,6 +125,7 @@ def save_messages(messages):
     """
     Compress and upload messages
     """
+    t0 = time.time()
     BUCKET = os.environ.get('BUCKET', None)
     s3 = boto3.client("s3", region_name='us-east-1')
 
@@ -122,8 +134,11 @@ def save_messages(messages):
     now = datetime.datetime.utcnow()
     folder = now.strftime('%Y%m%d')
     suffix = str(uuid.uuid4())[:8]
-    key = 'daily/{}/{}_{}.gz'.format(folder, now.strftime('%s'), suffix)
-    resp = s3.put_object(Body=gzip.compress(out), Bucket=BUCKET, Key=key)
+    key = 'daily/{}/{}_{}.txt'.format(folder, now.strftime('%s'), suffix)
+    #resp = s3.put_object(Body=gzip.compress(out), Bucket=BUCKET, Key=key)
+    resp = s3.put_object(Body=out, Bucket=BUCKET, Key=key)
+    t1 = time.time()
+    return t1 - t0
 
 
 def send_slack(msg=None, attachments=None):

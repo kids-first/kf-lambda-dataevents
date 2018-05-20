@@ -95,7 +95,8 @@ def test_upload(obj, messages, req, env):
     stream = io.BytesIO()
     KEY = s3.list_objects(Bucket=BUCKET)['Contents'][0]['Key']
     ob = s3.get_object(Bucket=BUCKET, Key=KEY)
-    dat = gzip.decompress(ob['Body'].read()).decode()
+    #dat = gzip.decompress(ob['Body'].read()).decode()
+    dat = ob['Body'].read().decode()
 
     for i, l in enumerate(dat.split('\n')):
         assert json.loads(messages[i])['Message'].replace("'", '"') == l
