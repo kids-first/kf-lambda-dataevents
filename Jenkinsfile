@@ -88,7 +88,7 @@ pipeline {
       steps {
              script {
                      env.DEPLOY_TO_PRD = input message: 'User input required',
-                                     submitter: 'lubneuskia,heatha',
+                                     submitter: 'lubneuskia,heatha,kolbmand',
                                      parameters: [choice(name: 'dataevents-lambda: Deploy to PRD Environment', choices: 'no\nyes', description: 'Choose "yes" if you want to deploy the PRD server')]
              }
      }
