@@ -62,8 +62,8 @@ def handler(event, context):
                   ],
                   "color": "warning"
                 },
-                { "fallback": ":clock: Took {}s to upload log file".format(taken),
-                  "text": ":clock: Took {}s to upload log file".format(taken),
+                { "fallback": ":clock1: Took {}s to upload log file".format(taken),
+                  "text": ":clock1: Took {}s to upload log file".format(taken),
                   "color": "warning"
                 },
                 { "fallback": ":deploying_dev: I'm going back for more!",
@@ -110,8 +110,8 @@ def handler(event, context):
               ],
               "color": "warning"
             },
-            { "fallback": ":clock: Took {}s to upload log file".format(taken),
-              "text": ":clock: Took {}s to upload log file".format(taken),
+            { "fallback": ":clock1: Took {}s to upload log file".format(taken),
+              "text": ":clock1: Took {}s to upload log file".format(taken),
               "color": "warning"
             },
             { "fallback": ":white_check_mark: Finished storing the daily logs!",
