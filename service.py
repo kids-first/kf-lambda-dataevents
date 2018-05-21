@@ -3,6 +3,7 @@ import gzip
 import io
 import boto3
 import json
+import time
 import uuid
 import datetime
 from botocore.vendored import requests
