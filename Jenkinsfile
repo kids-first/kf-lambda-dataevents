@@ -1,5 +1,5 @@
 @Library(value='kids-first/aws-infra-jenkins-shared-libraries-develop', changelog=false) _
-cloudfront_default {
+lambda_dataevents {
     projectName = "kf-lambda-dataevents"
     agentLabel = "terraform-testing"
 }
